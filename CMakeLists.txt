@@ -1,0 +1,18 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 2.6 FATAL_ERROR)
+CMAKE_POLICY(VERSION 2.6)
+FIND_PACKAGE(Torch REQUIRED)
+FIND_PACKAGE(SOX QUIET)
+
+if (SOX_FOUND)
+    SET(src sox.c)
+    include_directories (${SOX_INCLUDE_DIR})
+    ADD_TORCH_PACKAGE(audio "${src}" "${luasrc}" "Audio Processing")
+    TARGET_LINK_LIBRARIES(audio luaT TH ${SOX_LIBRARIES})
+else (SOX_FOUND)
+    message ("WARNING: Could not find SOX libraries, audio I/O wrapper will not be installed")
+endif (SOX_FOUND)
+
+SET(luasrc init.lua test.mp3)
+
+ADD_TORCH_PACKAGE(audio "${src}" "${luasrc}" "Audio Processing")
+TARGET_LINK_LIBRARIES(audio luaT TH)
