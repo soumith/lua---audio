@@ -49,13 +49,13 @@ static THTensor * libsox_(read_audio_file)(const char *file_name)
   if (samples_read == 0)
     abort_("[read_audio_file] Empty file or read failed in sox_read");
   // alloc tensor 
-  THTensor *tensor = THTensor_(newWithSize2d)(nchannels, samples_read);
+  THTensor *tensor = THTensor_(newWithSize2d)(nchannels, samples_read / nchannels );
+  tensor = THTensor_(newContiguous)(tensor);
   real *tensor_data = THTensor_(data)(tensor);
-
   // convert audio to dest tensor 
   int x,k;
   for (k=0; k<nchannels; k++) {
-    for (x=0; x<samples_read; x++) {
+    for (x=0; x<samples_read / nchannels; x++) {
       *tensor_data++ = (real)buffer[x*nchannels+k];
     }
   }
