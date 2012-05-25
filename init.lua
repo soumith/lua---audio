@@ -45,12 +45,7 @@ local function load(filename)
                        {type='string', help='path to file', req=true}))
       dok.error('missing file name', 'audio.load')
    end
-   local ext = string.match(filename,'%.(%a+)$')
    local tensor
-   if ext != 'wav' or ext != 'WAV' or ext != 'mp3' or ext != 'MP3' then
-      dok.error('unsupported audio format: ' .. ext, 'audio.load')
-   end
-
    if not xlua.require 'libsox' then
       dok.error('libsox package not found, please install libsox','audio.load')
    end

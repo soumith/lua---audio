@@ -36,11 +36,6 @@
 
 static THTensor * libsox_(read_audio_file)(const char *file_name)
 {
-  // Initialize sox library
-  int err = sox_format_init();
-  if (err != SOX_SUCCESS)
-    abort_("[read_audio_file] libSoX couldn't be initialized (sox_format_init failure)");
-
   // Create sox objects and read into int32_t buffer
   sox_format_t *fd;
   fd = sox_open_read(file_name, NULL, NULL, NULL);
@@ -67,7 +62,7 @@ static THTensor * libsox_(read_audio_file)(const char *file_name)
   // free buffer and sox structures
   sox_close(fd);
   free(buffer);
-
+  
   // return tensor 
   return tensor;
 }
@@ -89,6 +84,13 @@ DLL_EXPORT int libsox_(Main_init)(lua_State *L)
 {
   luaT_pushmetaclass(L, torch_(Tensor_id));
   luaT_registeratname(L, libsox_(Main__), "libsox");
+  // Initialize sox library
+  // int err = 
+  sox_format_init();
+  // if (err != SOX_SUCCESS)
+  // abort_("[read_audio_file] libSoX couldn't be initialized (sox_format_init failure)");
+  // close sox initializations
+  // sox_format_quit();
   return 1;
 }
 
