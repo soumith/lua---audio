@@ -55,7 +55,7 @@ static THTensor * libsox_(read_audio_file)(const char *file_name)
   // convert audio to dest tensor 
   int x,k;
   for (k=0; k<nchannels; k++) {
-    for (x=0; x<samples_read / nchannels; x++) {
+    for (x=0; x<samples_read/nchannels; x++) {
       *tensor_data++ = (real)buffer[x*nchannels+k];
     }
   }
@@ -85,12 +85,7 @@ DLL_EXPORT int libsox_(Main_init)(lua_State *L)
   luaT_pushmetaclass(L, torch_(Tensor_id));
   luaT_registeratname(L, libsox_(Main__), "libsox");
   // Initialize sox library
-  // int err = 
   sox_format_init();
-  // if (err != SOX_SUCCESS)
-  // abort_("[read_audio_file] libSoX couldn't be initialized (sox_format_init failure)");
-  // close sox initializations
-  // sox_format_quit();
   return 1;
 }
 

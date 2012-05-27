@@ -1,5 +1,21 @@
 #include <TH.h>
 #include <luaT.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+#include <fftw3.h>
+
+void abort_(const char * s, ...)
+{
+  va_list args;
+  va_start(args, s);
+  vfprintf(stderr, s, args);
+  fprintf(stderr, "\n");
+  va_end(args);
+  abort();
+}
 
 #define torch_(NAME) TH_CONCAT_3(torch_, Real, NAME)
 #define torch_string_(NAME) TH_CONCAT_STRING_3(torch., Real, NAME)

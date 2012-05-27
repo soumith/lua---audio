@@ -6,6 +6,12 @@ FIND_LIBRARY(SOX_LIBRARIES sox)
 message ("SOX_INCLUDE_DIR: ${SOX_INCLUDE_DIR}")
 message ("SOX_LIBRARIES: ${SOX_LIBRARIES}")
 
+FIND_PATH(FFTW_INCLUDE_DIR fftw3.h)
+FIND_LIBRARY(FFTW_LIBRARIES fftw3)
+message ("FFTW_INCLUDE_DIR: ${FFTW_INCLUDE_DIR}")
+message ("FFTW_LIBRARIES: ${FFTW_LIBRARIES}")
+
+
 #if (SOX_FOUND)
     SET(src sox.c)
     include_directories (${SOX_INCLUDE_DIR})
@@ -15,7 +21,9 @@ message ("SOX_LIBRARIES: ${SOX_LIBRARIES}")
 #    message ("WARNING: Could not find SOX libraries, audio I/O wrapper will not be installed")
 #endif (SOX_FOUND)
 
+
+include_directories (${FFTW_INCLUDE_DIR})
 SET(src audio.c)
 SET(luasrc init.lua test.mp3)
 ADD_TORCH_PACKAGE(audio "${src}" "${luasrc}" "Audio Processing")
-TARGET_LINK_LIBRARIES(audio luaT TH ${SOX_LIBRARIES})
+TARGET_LINK_LIBRARIES(audio luaT TH ${SOX_LIBRARIES} ${FFTW_LIBRARIES})

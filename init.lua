@@ -54,4 +54,28 @@ local function load(filename)
 end
 rawset(audio, 'load', load)
 
-
+----------------------------------------------------------------------
+-- spectrogram
+--
+local function spectrogram(...)
+   local output, input, window_size, window_type, stride
+   local args = {...}
+   if select('#',...) == 4 then
+      input = args[1]
+      window_size = args[2]
+      window_type = args[3]
+      stride = args[4]
+   else
+      print(dok.usage('audio.spectrogram',
+                       'generate the spectrogram of an audio', nil,
+                       {type='torch.Tensor', help='input single-channel audio', req=true},
+                       {type='number', help='window size', req=true},
+                       {type='string', help='window type: rect, hamming, hann, bartlett, kaiser' , req=true},
+                       {type='number', help='stride', req=true}))
+      dok.error('incorrect arguments', 'audio.spectrogram')
+   end
+   local window_type_id = 1;   
+   output = torch.Tensor().audio.stft(input, window_size, window_type_id, stride)
+   return output
+end
+rawset(audio, 'spectrogram', spectrogram)
