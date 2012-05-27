@@ -40,57 +40,66 @@
 
 // write audio.toMono() which converts a multi-channel audio to single channel
 
+#define M_PI 3.14159265358979323846
 static inline void audio_(apply_window)(double *input, 
                                        long window_size, int window_type) {
-    /* switch (window_type) { */
-    /* case 1: // Rectangular Window, do nothing */
-    /*   break; */
-    /* case 2: // Hamming Window */
-    /*   audio_(apply_hamming)(buffer, window_size); */
-    /*   break; */
-    /* case 3: // Hann Window */
-    /*   audio_(apply_hann)(buffer, window_size); */
-    /*   break; */
-    /* case 4: // Bartlett Window */
-    /*   audio_(apply_bartlett)(buffer, window_size); */
-    /*   break; */
-    /* case 5: // Kaiser Window */
-    /*   audio_(apply_kaiser)(buffer, window_size); */
-    /*   break; */
-    /* default: */
-    /*   abort_("[stft_generic] Unknown window_type"); */
-    /*   break; */
-    /* } */
+  long i, m = window_size -1;
+    switch (window_type) {
+    case 1: // Rectangular Window, do nothing
+      break;
+    case 2: // Hamming Window
+      for (i = 0; i < window_size; ++i) 
+        input[i] *= .53836 - .46164 * cos(2 * M_PI * i / m);
+      break;
+    case 3: // Hann Window
+      for (i = 0; i < window_size; ++i) 
+        input[i] *= .5 - .5 * cos(2 * M_PI * i / m);
+      break;
+    case 4: // Bartlett Window
+      for (i = 0; i < window_size; ++i) 
+        input[i] *= 2. / m * (m / 2. - fabs(i - m / 2.));
+      break;
+    default:
+      abort_("[stft_generic] Unknown window_type");
+      break;
+    }
 }
 
 // generic short-time fourier transform function that supports multiple window types
 // arguments [tensor, window-size, window-type, hop-size/stride]
-// window_type [1, 2, 3, 4, 5] for [rectangular, hamming, hann, bartlett, kaiser]
+// window_type [1, 2, 3, 4] for [rectangular, hamming, hann, bartlett]
 static THTensor * audio_(stft_generic)(THTensor *input, 
                                        long window_size, int window_type, 
                                        long stride)
 {
   if (input->size[0] > 1)
     abort_("[stft_generic] Multi-channel stft not supported");
-  long length = input->size[1];
+
   real *input_data = THTensor_(data)(input);
-  long nwindows = ((length - window_size)/stride) + 1;
-  THTensor *output = THTensor_(newWithSize2d)(nwindows, window_size );
+  const long length = input->size[1];
+  const long nwindows = ((length - window_size)/stride) + 1;
+  const long noutput = window_size/2 + 1;
+  THTensor *output = THTensor_(newWithSize2d)(nwindows, noutput);
   real *output_data = THTensor_(data)(output);
   double *buffer = malloc(sizeof(double) * window_size);
-  fftw_complex *fbuffer = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*window_size);
-  long index, k;
+  fftw_complex *fbuffer = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*noutput);
+  long index, k, outindex=0;
+
   fftw_plan plan = fftw_plan_dft_r2c_1d(window_size, buffer, fbuffer, FFTW_ESTIMATE);
 
   // loop over the input. get a buffer. apply window. call stft. repeat with stride.
   for (index = 0; index + window_size <= length; index = index + stride) {
     for (k=0; k<window_size; k++)
       buffer[k] = (double)input_data[index+k];
+
     audio_(apply_window)(buffer, window_size, window_type);
-    // now apply rfftw over the buffer
-    fftw_execute(plan);
-    for (k=0; k < window_size/2 + 1; k++)
-      output_data[index + k] = (real)fbuffer[k][0];
+
+    fftw_execute(plan);     // now apply rfftw over the buffer
+
+    for (k=0; k < noutput; k++)
+      output_data[outindex + k] = (real) 0.5 * log(fbuffer[k][0] * fbuffer[k][0] 
+                                              + fbuffer[k][1] * fbuffer[k][1] + 10e-2);
+    outindex += noutput;
   }
 
   // cleanup

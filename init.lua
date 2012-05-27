@@ -70,11 +70,20 @@ local function spectrogram(...)
                        'generate the spectrogram of an audio', nil,
                        {type='torch.Tensor', help='input single-channel audio', req=true},
                        {type='number', help='window size', req=true},
-                       {type='string', help='window type: rect, hamming, hann, bartlett, kaiser' , req=true},
+                       {type='string', help='window type: rect, hamming, hann, bartlett' , req=true},
                        {type='number', help='stride', req=true}))
       dok.error('incorrect arguments', 'audio.spectrogram')
    end
-   local window_type_id = 1;   
+   local window_type_id;
+   if window_type == 'rect' then
+      window_type_id = 1
+   elseif window_type == 'hamming' then
+      window_type_id = 2
+   elseif window_type == 'hann' then
+      window_type_id = 3
+   elseif window_type == 'bartlett' then
+      window_type_id = 4
+   end
    output = torch.Tensor().audio.stft(input, window_size, window_type_id, stride)
    return output
 end
