@@ -9,3 +9,5 @@ mpeg, ircam and any other format supported by libsox.
 Requirements
 ===
 libsox v14.3.2 or above
+
+libfftw3
