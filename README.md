@@ -7,6 +7,7 @@ Supports input of mp3, wav, aac, ogg, flac, avr, cdda, cvs/vms, aiff, au, amr, m
 mpeg, ircam and any other format supported by libsox.
 
 Calculate stft with a variety of windows (rectangular, hamming, hann, bartlett)
+
 Generate spectrograms 
 
 Requirements
