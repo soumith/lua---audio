@@ -6,7 +6,8 @@ Module for torch to support audio i/o as well as do common operations like dFFT,
 Supports input of mp3, wav, aac, ogg, flac, avr, cdda, cvs/vms, aiff, au, amr, mp2, mp4, ac3, avi, wmv, 
 mpeg, ircam and any other format supported by libsox.
 
-Generate spectrograms with a variety of stft windows (rectangular, hamming, hann, bartlett)
+Calculate stft with a variety of windows (rectangular, hamming, hann, bartlett)
+Generate spectrograms 
 
 Requirements
 ===
