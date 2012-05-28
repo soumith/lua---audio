@@ -79,7 +79,7 @@ static THTensor * audio_(stft_generic)(THTensor *input,
   const long length = input->size[1];
   const long nwindows = ((length - window_size)/stride) + 1;
   const long noutput = window_size/2 + 1;
-  THTensor *output = THTensor_(newWithSize2d)(nwindows, noutput);
+  THTensor *output = THTensor_(newWithSize3d)(nwindows, noutput, 2);
   real *output_data = THTensor_(data)(output);
   double *buffer = malloc(sizeof(double) * window_size);
   fftw_complex *fbuffer = (fftw_complex*)fftw_malloc(sizeof(fftw_complex)*noutput);
@@ -93,13 +93,13 @@ static THTensor * audio_(stft_generic)(THTensor *input,
       buffer[k] = (double)input_data[index+k];
 
     audio_(apply_window)(buffer, window_size, window_type);
-
     fftw_execute(plan);     // now apply rfftw over the buffer
-
-    for (k=0; k < noutput; k++)
-      output_data[outindex + k] = (real) 0.5 * log(fbuffer[k][0] * fbuffer[k][0] 
-                                              + fbuffer[k][1] * fbuffer[k][1] + 10e-2);
-    outindex += noutput;
+        
+    for (k=0; k < noutput; k++) {
+      output_data[outindex + k * 2] = (real) fbuffer[noutput - k - 1][0];
+      output_data[outindex + k * 2 + 1] = (real) fbuffer[noutput - k - 1][1];
+    }
+    outindex += noutput *2;
   }
 
   // cleanup

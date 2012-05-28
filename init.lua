@@ -67,7 +67,41 @@ local function spectrogram(...)
       stride = args[4]
    else
       print(dok.usage('audio.spectrogram',
-                       'generate the spectrogram of an audio', nil,
+                       'generate the spectrogram of an audio. returns a 2D tensor, with number_of_windows x window_size/2+1, each value representing the magnitude of each frequency in dB', nil,
+                       {type='torch.Tensor', help='input single-channel audio', req=true},
+                       {type='number', help='window size', req=true},
+                       {type='string', help='window type: rect, hamming, hann, bartlett' , req=true},
+                       {type='number', help='stride', req=true}))
+      dok.error('incorrect arguments', 'audio.spectrogram')
+   end
+
+   -- calculate stft
+   local stftout = audio.stft(input, window_size, window_type, stride)
+   -- torch.Tensor().audio.stft(input, window_size, window_type_id, stride)
+
+   -- calculate magnitude of signal and convert to dB to make it look prettier
+   local stftout_r = stftout:select(3,1)
+   local stftout_c = stftout:select(3,2)
+   stftout_r:pow(2)
+   stftout_c:pow(2)
+   local stftout_magnitude = stftout_r + stftout_c
+   stftout_magnitude = stftout_magnitude + 0.01 -- adding constant to avoid log(0)
+   output = stftout_magnitude:log() * 10
+   return output:transpose(1,2)
+end
+rawset(audio, 'spectrogram', spectrogram)
+
+local function stft(...)
+   local output, input, window_size, window_type, stride
+   local args = {...}
+   if select('#',...) == 4 then
+      input = args[1]
+      window_size = args[2]
+      window_type = args[3]
+      stride = args[4]
+   else
+      print(dok.usage('audio.stft',
+                       'calculate the stft of an audio. returns a 3D tensor, with number_of_windows x window_size/2+1 x 2(complex number with real and complex parts)', nil,
                        {type='torch.Tensor', help='input single-channel audio', req=true},
                        {type='number', help='window size', req=true},
                        {type='string', help='window type: rect, hamming, hann, bartlett' , req=true},
@@ -84,7 +118,8 @@ local function spectrogram(...)
    elseif window_type == 'bartlett' then
       window_type_id = 4
    end
+   -- calculate stft
    output = torch.Tensor().audio.stft(input, window_size, window_type_id, stride)
    return output
 end
-rawset(audio, 'spectrogram', spectrogram)
+rawset(audio, 'stft', stft)
