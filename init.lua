@@ -45,6 +45,9 @@ local function load(filename)
                        {type='string', help='path to file', req=true}))
       dok.error('missing file name', 'audio.load')
    end
+   if not paths.filep(filename) then
+      dok.error('Specified filename: ' .. filename .. ' not found', 'audio.load')
+   end
    local tensor
    if not xlua.require 'libsox' then
       dok.error('libsox package not found, please install libsox','audio.load')
@@ -123,3 +126,13 @@ local function stft(...)
    return output
 end
 rawset(audio, 'stft', stft)
+
+
+----------------------------------------------------------------------
+-- loads voice.mp3 that is included with the repo
+local function samplevoice()
+   local fname = 'voice.mp3'
+   voice = audio.load(sys.concat(sys.fpath(), fname))   
+   return voice
+end
+rawset(audio, 'samplevoice', samplevoice)

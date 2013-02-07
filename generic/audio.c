@@ -40,7 +40,10 @@
 
 // write audio.toMono() which converts a multi-channel audio to single channel
 
-#define M_PI 3.14159265358979323846
+#ifndef M_PI
+#define M_PI 3.14159265358979323846264338327950288
+#endif
+
 static inline void audio_(apply_window)(double *input, 
                                        long window_size, int window_type) {
   long i, m = window_size -1;
@@ -110,12 +113,12 @@ static THTensor * audio_(stft_generic)(THTensor *input,
 }
 
 static int audio_(Main_stft)(lua_State *L) {
-  THTensor *input = luaT_checkudata(L, 1, torch_(Tensor_id));
+  THTensor *input = luaT_checkudata(L, 1, torch_Tensor);
   long window_size = luaL_checklong(L, 2);
   int window_type = luaL_checkint(L, 3);
   long stride = luaL_checklong(L, 4);
   THTensor *output = audio_(stft_generic)(input, window_size, window_type, stride);
-  luaT_pushudata(L, output, torch_(Tensor_id));
+  luaT_pushudata(L, output, torch_Tensor);
   return 1;
 }
 
@@ -126,7 +129,7 @@ static const struct luaL_Reg audio_(Main__) [] = {
 
 void audio_(Main_init)(lua_State *L)
 {
-  luaT_pushmetaclass(L, torch_(Tensor_id));
+  luaT_pushmetatable(L, torch_Tensor);
   luaT_registeratname(L, audio_(Main__), "audio");
 }
 

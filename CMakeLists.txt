@@ -24,6 +24,6 @@ message ("FFTW_LIBRARIES: ${FFTW_LIBRARIES}")
 
 include_directories (${FFTW_INCLUDE_DIR})
 SET(src audio.c)
-SET(luasrc init.lua test.mp3)
+SET(luasrc init.lua voice.mp3)
 ADD_TORCH_PACKAGE(audio "${src}" "${luasrc}" "Audio Processing")
 TARGET_LINK_LIBRARIES(audio luaT TH ${SOX_LIBRARIES} ${FFTW_LIBRARIES})

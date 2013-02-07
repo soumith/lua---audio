@@ -70,11 +70,11 @@ static THTensor * libsox_(read_audio_file)(const char *file_name)
 static int libsox_(Main_load)(lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
   THTensor *tensor = libsox_(read_audio_file)(filename);
-  luaT_pushudata(L, tensor, torch_(Tensor_id));
+  luaT_pushudata(L, tensor, torch_Tensor);
   return 1;
 }
 
-static const luaL_reg libsox_(Main__)[] =
+static const luaL_Reg libsox_(Main__)[] =
 {
   {"load", libsox_(Main_load)},
   {NULL, NULL}
@@ -82,7 +82,7 @@ static const luaL_reg libsox_(Main__)[] =
 
 DLL_EXPORT int libsox_(Main_init)(lua_State *L)
 {
-  luaT_pushmetaclass(L, torch_(Tensor_id));
+  luaT_pushmetatable(L, torch_Tensor);
   luaT_registeratname(L, libsox_(Main__), "libsox");
   // Initialize sox library
   sox_format_init();

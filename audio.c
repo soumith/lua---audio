@@ -18,30 +18,14 @@ void abort_(const char * s, ...)
 }
 
 #define torch_(NAME) TH_CONCAT_3(torch_, Real, NAME)
-#define torch_string_(NAME) TH_CONCAT_STRING_3(torch., Real, NAME)
+#define torch_Tensor TH_CONCAT_STRING_3(torch., Real, Tensor)
 #define audio_(NAME) TH_CONCAT_3(audio_, Real, NAME)
-
-static const void* torch_ByteTensor_id = NULL;
-static const void* torch_CharTensor_id = NULL;
-static const void* torch_ShortTensor_id = NULL;
-static const void* torch_IntTensor_id = NULL;
-static const void* torch_LongTensor_id = NULL;
-static const void* torch_FloatTensor_id = NULL;
-static const void* torch_DoubleTensor_id = NULL;
 
 #include "generic/audio.c"
 #include "THGenerateAllTypes.h"
 
 DLL_EXPORT int luaopen_libaudio(lua_State *L)
 {
-  torch_ByteTensor_id = luaT_checktypename2id(L, "torch.ByteTensor");
-  torch_CharTensor_id = luaT_checktypename2id(L, "torch.CharTensor");
-  torch_ShortTensor_id = luaT_checktypename2id(L, "torch.ShortTensor");
-  torch_IntTensor_id = luaT_checktypename2id(L, "torch.IntTensor");
-  torch_LongTensor_id = luaT_checktypename2id(L, "torch.LongTensor");
-  torch_FloatTensor_id = luaT_checktypename2id(L, "torch.FloatTensor");
-  torch_DoubleTensor_id = luaT_checktypename2id(L, "torch.DoubleTensor");
-
   audio_ByteMain_init(L);
   audio_CharMain_init(L);
   audio_ShortMain_init(L);
