@@ -34,17 +34,17 @@ $ sudo apt-get install sox libsox-dev libsox-fmt-all
 
 Installation
 ------------
-This project can be installed with `torch-pkg` like this:
+This project can be installed with `torch-rocks` like this:
 
 ```bash
-$ torch-pkg install https://github.com/soumith/lua---audio.git
+$ torch-rocks install https://raw.github.com/soumith/lua---audio/master/audio-0.1-0.rockspec
 ```
 
 Or, if you have downloaded this repository on your machine, and
 you are in its directory:
 
 ```bash
-$ mkdir build && cd build && make install
+$ torch-rocks make
 ```
 
 Usage
