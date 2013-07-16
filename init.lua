@@ -132,7 +132,7 @@ rawset(audio, 'stft', stft)
 -- loads voice.mp3 that is included with the repo
 local function samplevoice()
    local fname = 'voice.mp3'
-   voice = audio.load(sys.concat(sys.fpath(), fname))   
+   local voice = audio.load(sys.concat(sys.fpath(), fname))   
    return voice
 end
 rawset(audio, 'samplevoice', samplevoice)
