@@ -37,7 +37,7 @@ Installation
 This project can be installed with `torch-rocks` like this:
 
 ```bash
-$ torch-rocks install https://raw.github.com/soumith/lua---audio/master/audio-0.1-0.rockspec
+$ torch-rocks install audio
 ```
 
 Or, if you have downloaded this repository on your machine, and
