@@ -17,9 +17,8 @@ Generate spectrograms
 
 Dependencies
 ------------
-libsox v14.3.2 or above
-
-libfftw3
+* libsox v14.3.2 or above
+* libfftw3
 
 Quick install on
 OSX (Homebrew):
