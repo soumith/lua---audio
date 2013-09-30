@@ -30,7 +30,7 @@
 /* --  */
 /* ---------------------------------------------------------------------- */
 /* -- description: */
-/* --     audio.c - a wrapper from libSox to Torch-7 */
+/* --     audio.c - general purpose audio transforms for Torch-7 */
 /* -- */
 /* -- history:  */
 /* --     May 26th, 2012, 5:46PM - wrote stft and channel 
