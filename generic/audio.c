@@ -184,6 +184,28 @@ static THTensor * audio_(cqt_generic)(THTensor *input,
      OVRLP = cqtKernel.fftLEN - cqtKernel.fftHOP;
      K = cqtKernel.fKernel'; // conjugate spectral kernel for cqt transformation  
   */
+  /* 
+  for (long i=1; i < octaveNr; ++i) {
+    xx = buffer(x,cqtKernel.fftLEN, OVRLP,'nodelay'); // generating FFT blocks
+    XX = fft(xx); // applying fft to each column (each FFT frame)
+    cellCQT{i} = K*XX; // calculating cqt coefficients for all FFT frames for this octave
+    if (i !=octaveNr) {
+      x = filtfilt(B,A,x); // anti aliasing filter
+      x = x(1:2:end); // drop samplerate by 2
+    }
+  }
+  */
+  
+  // map to sparse matrix representation
+  /* TODO: this should be optional, unless we want a sparse representation to save memory
+  spCQT = cell2sparse(cellCQT,octaveNr,bins,cqtKernel.firstcenter,cqtKernel.atomHOP,cqtKernel.atomNr);
+  */
+  
+  // return
+  /* TODO: No need to created this structure. Just returning transformed x (tensor) should be sufficient
+  intParam = struct('sufZeros',suffixZeros,'preZeros',prefixZeros,'xlen_init',xlen_init,'fftLEN',cqtKernel.fftLEN,'fftHOP',cqtKernel.fftHOP,'q',q,'filtCoeffA',A,'filtCoeffB',B,'firstcenter',cqtKernel.firstcenter,'atomHOP',cqtKernel.atomHOP,'atomNr',cqtKernel.atomNr,'Nk_max',cqtKernel.Nk_max,'Q',cqtKernel.Q,'rast',0);
+  Xcqt = struct('spCQT',spCQT,'fKernel',cqtKernel.fKernel,'fmax',fmax,'fmin',fmin,'octaveNr',octaveNr,'bins',cqtKernel.bins,'intParams',intParam);
+  */
   
   return output;
 }
