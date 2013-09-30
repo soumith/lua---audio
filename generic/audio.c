@@ -44,6 +44,8 @@
 #define M_PI 3.14159265358979323846264338327950288
 #endif
 
+// Apply an edge-smoothing function to make the signal periodic. 
+// Different window types are provided
 static inline void audio_(apply_window)(double *input, 
                                        long window_size, int window_type) {
   long i, m = window_size -1;
@@ -68,6 +70,7 @@ static inline void audio_(apply_window)(double *input,
     }
 }
 
+////////////////////////////////////////////////////////////////////////////
 // generic short-time fourier transform function that supports multiple window types
 // arguments [tensor, window-size, window-type, hop-size/stride]
 // window_type [1, 2, 3, 4] for [rectangular, hamming, hann, bartlett]
@@ -121,9 +124,86 @@ static int audio_(Main_stft)(lua_State *L) {
   luaT_pushudata(L, output, torch_Tensor);
   return 1;
 }
+// End of STFT section
+////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////
+// fast Constant-Q transform as proposed in this paper:
+// http://www.elec.qmul.ac.uk/people/anssik/cqt/smc2010.pdf
+// Inspired the matlab implementation here:
+// http://www.eecs.qmul.ac.uk/~anssik/cqt/
+
+static THTensor * audio_(genCQTkernel)(double fmax, int bins,
+                                       double fs, double q, double atomHopFactor,
+				       double thres)
+{
+  // TODO: write this
+  THTensor *output;
+  return output;
+}
+
+// arguments [tensor, minimum-frequency, maximum-frequency, bins-per-octave, sample-rate]
+// returns [Constant-Q transformed signal tensor]
+static THTensor * audio_(cqt_generic)(THTensor *input, 
+                                       double fmin, double fmax, int bins,
+                                       double fs)
+{
+  // Check the input to be 1-D
+  // input parameters
+  double q = 1; // default value
+  double atomHopFactor = 0.25; // default value
+  double thresh = 0.0005; // default value
+  THTensor* output;
+  // winFlag = 'sqrt_blackmanharris'; // This window scheme
+  
+  // define
+  double octaveNr = ceil(log2(fmax/fmin));
+  fmin = (fmax/exp2(octaveNr)) * exp2(1/(double)bins); // set fmin to actual value
+  // xlen_init = length(x); // not needed for now
+
+  // design lowpass filter
+  /* TODO:
+    if ~exist('B','var') || ~exist('A','var')
+    LPorder = 6; %order of the anti-aliasing filter
+    cutoff = 0.5;
+    [B A] = butter(LPorder,cutoff,'low'); %design f_nyquist/2-lowpass filter
+    end
+  */
+  
+  // design kernel for one octave
+  // TODO: Fill this function, right now it's empty
+  THTensor* cqtKernel = audio_(genCQTkernel)(fmax, bins,fs,q,atomHopFactor,thresh);
+
+  // calculate CQT
+  /* TODO: 
+     cellCQT = cell(1,octaveNr);
+     maxBlock = cqtKernel.fftLEN * 2^(octaveNr-1); // largest FFT Block (virtual)
+     suffixZeros = maxBlock;
+     prefixZeros = maxBlock;
+     x = [zeros(prefixZeros,1); x; zeros(suffixZeros,1)]; // zeropadding
+     OVRLP = cqtKernel.fftLEN - cqtKernel.fftHOP;
+     K = cqtKernel.fKernel'; // conjugate spectral kernel for cqt transformation  
+  */
+  
+  return output;
+}
+
+static int audio_(Main_cqt)(lua_State *L) {
+  THTensor *input = luaT_checkudata(L, 1, torch_Tensor);
+  double fmin = luaL_checknumber(L, 2);
+  double fmax = luaL_checknumber(L, 3);
+  int bins = luaL_checkint(L, 4);
+  long sample_rate = luaL_checknumber(L, 5);
+  THTensor *output = audio_(cqt_generic)(input, fmin, fmax, bins, sample_rate);
+  luaT_pushudata(L, output, torch_Tensor);
+  return 1;
+}
+// End of CQT section
+////////////////////////////////////////////////////////////////////////////
 
 static const struct luaL_Reg audio_(Main__) [] = {
   {"stft", audio_(Main_stft)},
+  {"cqt", audio_(Main_cqt)},
   {NULL, NULL}
 };
 

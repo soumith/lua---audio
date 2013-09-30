@@ -109,7 +109,7 @@ local function stft(...)
                        {type='number', help='window size', req=true},
                        {type='string', help='window type: rect, hamming, hann, bartlett' , req=true},
                        {type='number', help='stride', req=true}))
-      dok.error('incorrect arguments', 'audio.spectrogram')
+      dok.error('incorrect arguments', 'audio.stft')
    end
    local window_type_id;
    if window_type == 'rect' then
@@ -126,6 +126,31 @@ local function stft(...)
    return output
 end
 rawset(audio, 'stft', stft)
+
+local function cqt(...)
+   local output, input, fmin, fmax, bins_per_octave, sample_rate
+   local args = {...}
+   if select('#',...) == 5 then
+      input = args[1]
+      fmin = args[2]
+      fmax = args[3]
+      bins_per_octave = args[3]
+      sample_rate = args[4]
+   else
+      print(dok.usage('audio.cqt',
+		      'calculate the constant-Q transformed audio signal. returns a [TODO: fill this description]', nil,
+		      {type='torch.Tensor', help='input single-channel audio', req=true},
+		      {type='number', help='lowest frequency of interest', req=true},
+		      {type='number', help='highest frequency of interest', req=true},
+		      {type='number', help='frequency bins per octave', req=true},
+		      {type='number', help='sampling rate of the input', req=true}))
+      dok.error('incorrect arguments', 'audio.cqt')
+   end
+   -- calculate stft
+   output = torch.Tensor().audio.cqt(input, fmin, fmax, bins_per_octave, sample_rate)
+   return output
+end
+rawset(audio, 'cqt', cqt)
 
 
 ----------------------------------------------------------------------
