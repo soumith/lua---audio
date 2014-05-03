@@ -13,7 +13,7 @@ description = {
 	    Common audio operations (Short-time Fourier transforms, Spectrograms)
    ]],
    homepage = "https://github.com/soumith/lua---audio",
-   license  = "BSD"
+   license  = "RWTFPL"
 }
 
 dependencies = {
