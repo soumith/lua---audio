@@ -37,12 +37,12 @@ Installation
 This project can be installed with `luarocks` like this:
 
 ```bash
-$ luarocks install https://raw.github.com/soumith/lua---audio/master/audio-0.1-0.rockspec
+$ luarocks install https://raw.githubusercontent.com/soumith/lua---audio/master/audio-0.1-0.rockspec
 ```
 
 On Ubuntu 13.04 64-bit, I had to modify the command slightly because of new library directory structures not picked up by luarocks.
 ```bash
-$ sudo luarocks install https://raw.github.com/soumith/lua---audio/master/audio-0.1-0.rockspec LIBSOX_LIBDIR=/usr/lib/x86_64-linux-gnu/ LIBFFTW3_LIBDIR=/usr/lib/x86_64-linux-gnu
+$ sudo luarocks install https://raw.githubusercontent.com/soumith/lua---audio/master/audio-0.1-0.rockspec LIBSOX_LIBDIR=/usr/lib/x86_64-linux-gnu/ LIBFFTW3_LIBDIR=/usr/lib/x86_64-linux-gnu
 ```
 
 Or, if you have downloaded this repository on your machine, and
