@@ -62,7 +62,8 @@ static THTensor * libsox_(read_audio_file)(const char *file_name)
   // free buffer and sox structures
   sox_close(fd);
   free(buffer);
-  
+  THTensor_(free)(tensor);
+
   // return tensor 
   return tensor;
 }
