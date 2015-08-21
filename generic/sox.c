@@ -34,7 +34,7 @@
 /* ---------------------------------------------------------------------- */
 
 
-static THTensor * libsox_(read_audio_file)(const char *file_name)
+void libsox_(read_audio_file)(const char *file_name, THTensor* tensor, int* sample_rate)
 {
   // Create sox objects and read into int32_t buffer
   sox_format_t *fd;
@@ -44,13 +44,13 @@ static THTensor * libsox_(read_audio_file)(const char *file_name)
   
   int nchannels = fd->signal.channels;
   long buffer_size = fd->signal.length;
+  *sample_rate = (int) fd->signal.rate;
   int32_t *buffer = (int32_t *)malloc(sizeof(int32_t) * buffer_size);
   size_t samples_read = sox_read(fd, buffer, buffer_size);
   if (samples_read == 0)
     abort_("[read_audio_file] Empty file or read failed in sox_read");
   // alloc tensor 
-  THTensor *tensor = THTensor_(newWithSize2d)(nchannels, samples_read / nchannels );
-  tensor = THTensor_(newContiguous)(tensor);
+  THTensor_(resize2d)(tensor, nchannels, samples_read / nchannels );
   real *tensor_data = THTensor_(data)(tensor);
   // convert audio to dest tensor 
   int x,k;
@@ -62,22 +62,69 @@ static THTensor * libsox_(read_audio_file)(const char *file_name)
   // free buffer and sox structures
   sox_close(fd);
   free(buffer);
-  THTensor_(free)(tensor);
+}
 
-  // return tensor 
-  return tensor;
+void libsox_(write_audio_file)(const char *file_name, THTensor* src, const char *extension, int sample_rate)
+{
+  long nchannels = src->size[0];
+  long nsamples = src->size[1];
+
+  // Create sox objects and read into int32_t buffer
+  sox_format_t *fd;
+  sox_signalinfo_t sinfo;
+  sinfo.rate = sample_rate;
+  sinfo.channels = nchannels;
+  sinfo.length = nsamples * nchannels;
+  sinfo.precision = 32;
+  sinfo.mult = NULL;
+  fd = sox_open_write(file_name, &sinfo, NULL, extension, NULL, NULL);
+  if (fd == NULL)
+    abort_("[write_audio_file] Failure to open file for writing");
+  
+  fd->signal.length = nsamples;
+  fd->signal.channels = nchannels;
+
+  real* data = THTensor_(data)(src);
+
+  // convert audio to dest tensor 
+  int x,k;
+  for (k=0; k<nchannels; k++) {
+    for (x=0; x<nsamples; x++) {
+      int32_t sample = (int32_t)(data[x*nchannels+k]);
+      size_t samples_written = sox_write(fd, &sample, 1);
+      if (samples_written != 1)
+	abort_("[write_audio_file] write failed in sox_write");
+    }
+  }
+  // free buffer and sox structures
+  sox_close(fd);
+
+  return;
 }
 
 static int libsox_(Main_load)(lua_State *L) {
   const char *filename = luaL_checkstring(L, 1);
-  THTensor *tensor = libsox_(read_audio_file)(filename);
+  THTensor *tensor = THTensor_(new)();
+  int sample_rate = 0;
+  libsox_(read_audio_file)(filename, tensor, &sample_rate);
   luaT_pushudata(L, tensor, torch_Tensor);
+  lua_pushnumber(L, (double) sample_rate);
+  return 2;
+}
+
+static int libsox_(Main_save)(lua_State *L) {
+  const char *filename = luaL_checkstring(L, 1);
+  THTensor *tensor = luaT_checkudata(L, 2, torch_Tensor);
+  const char *extension = luaL_checkstring(L, 3);
+  int sample_rate = luaL_checkint(L, 4);
+  libsox_(write_audio_file)(filename, tensor, extension, sample_rate);
   return 1;
 }
 
 static const luaL_Reg libsox_(Main__)[] =
 {
   {"load", libsox_(Main_load)},
+  {"save", libsox_(Main_save)},
   {NULL, NULL}
 };
 
