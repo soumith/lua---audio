@@ -33,6 +33,7 @@ require 'torch'
 require 'sys'
 require 'xlua'
 require 'dok'
+require 'paths'
 require 'libaudio'
 
 ----------------------------------------------------------------------
@@ -52,10 +53,25 @@ local function load(filename)
    if not xlua.require 'libsox' then
       dok.error('libsox package not found, please install libsox','audio.load')
    end
-   local a = torch.Tensor().libsox.load(filename)
-   return a
+   local a, sample_rate = torch.Tensor().libsox.load(filename)
+   return a, sample_rate
 end
 rawset(audio, 'load', load)
+--------------------------------------------------------------------------
+-- save to multiple formats
+local function save(filename, src, sample_rate)
+   if not filename or not src then
+      error('filename or src tensor missing')
+   end
+   if not xlua.require 'libsox' then
+      dok.error('libsox package not found, please install libsox','audio.save')
+   end
+   local extension = paths.extname(filename)
+   assert(extension, 'did not find extension (like .wav or .mp3) in filename. Give a filename with an extension, for example: hello.wav')
+   assert(sample_rate and type(sample_rate) == 'number', 'provide a sample rate (a number) such as 22050')
+   src.libsox.save(filename, src, extension, sample_rate)
+end
+rawset(audio, 'save', save)
 
 ----------------------------------------------------------------------
 -- spectrogram

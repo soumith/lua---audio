@@ -2,7 +2,7 @@ Audio Library for Torch
 =======================
 
 Audio library for Torch-7
- * Support audio I/O (Load files)
+ * Support audio I/O (Load files, save files)
  * Common audio operations (Short-time Fourier transforms, Spectrograms)
 
 Load the following formats into a torch Tensor
@@ -60,6 +60,19 @@ audio.load
  usage:  
  audio.load(  
      string                              -- path to file  
+ )
+
+returns torch.Tensor, sample_rate
+```
+
+audio.save
+```
+ saves a tensor into an audio file. The extension of the given path is used as the saving format.
+ usage:  
+ audio.save(  
+     string                              -- path to file
+	 tensor                              -- NChannels x NSamples 2D tensor
+	 number                              -- sample_rate of the audio to be saved as
  )
 ```
 
