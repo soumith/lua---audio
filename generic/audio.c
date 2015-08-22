@@ -65,7 +65,7 @@ static inline void audio_(apply_window)(double *input,
         input[i] *= 2. / m * (m / 2. - fabs(i - m / 2.));
       break;
     default:
-      abort_("[stft_generic] Unknown window_type");
+      THError("[stft_generic] Unknown window_type");
       break;
     }
 }
@@ -78,11 +78,16 @@ static THTensor * audio_(stft_generic)(THTensor *input,
                                        long window_size, int window_type, 
                                        long stride)
 {
-  if (input->size[0] > 1)
-    abort_("[stft_generic] Multi-channel stft not supported");
+  const long length = input->size[0];
+  long nChannels = 1;
+
+  if (THTensor_(nDimension)(input) > 1)
+    nChannels = input->size[1];
+  
+  if (nChannels > 1)
+    THError("[stft_generic] Multi-channel stft not supported");
 
   real *input_data = THTensor_(data)(input);
-  const long length = input->size[1];
   const long nwindows = ((length - window_size)/stride) + 1;
   const long noutput = window_size/2 + 1;
   THTensor *output = THTensor_(newWithSize3d)(nwindows, noutput, 2);

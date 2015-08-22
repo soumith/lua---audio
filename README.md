@@ -62,7 +62,7 @@ audio.load
      string                              -- path to file  
  )
 
-returns torch.Tensor, sample_rate
+returns torch.Tensor of size NSamples x NChannels, sample_rate
 ```
 
 audio.save
@@ -71,7 +71,7 @@ audio.save
  usage:  
  audio.save(  
      string                              -- path to file
-	 tensor                              -- NChannels x NSamples 2D tensor
+	 tensor                              -- NSamples x NChannels 2D tensor
 	 number                              -- sample_rate of the audio to be saved as
  )
 ```

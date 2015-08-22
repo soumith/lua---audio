@@ -1,5 +1,4 @@
 require 'audio'
-require 'sndfile'
 
 t, sample_rate = audio.load('voice.mp3')
 print(#t)
