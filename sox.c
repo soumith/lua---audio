@@ -35,13 +35,37 @@ DLL_EXPORT int luaopen_libsox(lua_State *L)
   libsox_FloatMain_init(L);
   libsox_DoubleMain_init(L);
 
-  luaL_register(L, "libsox.byte", libsox_ByteMain__);
-  luaL_register(L, "libsox.char", libsox_CharMain__);
-  luaL_register(L, "libsox.short", libsox_ShortMain__);
-  luaL_register(L, "libsox.int", libsox_IntMain__);
-  luaL_register(L, "libsox.long", libsox_LongMain__);
-  luaL_register(L, "libsox.double", libsox_DoubleMain__);
-  luaL_register(L, "libsox.float", libsox_FloatMain__);
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "libsox");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, libsox_DoubleMain__, 0);
+  lua_setfield(L, -2, "double");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, libsox_FloatMain__, 0);
+  lua_setfield(L, -2, "float");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, libsox_ByteMain__, 0);
+  lua_setfield(L, -2, "byte");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, libsox_CharMain__, 0);
+  lua_setfield(L, -2, "char");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, libsox_ShortMain__, 0);
+  lua_setfield(L, -2, "short");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, libsox_IntMain__, 0);
+  lua_setfield(L, -2, "int");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, libsox_LongMain__, 0);
+  lua_setfield(L, -2, "long");
 
   return 1;
 }

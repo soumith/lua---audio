@@ -35,13 +35,37 @@ DLL_EXPORT int luaopen_libaudio(lua_State *L)
   audio_FloatMain_init(L);
   audio_DoubleMain_init(L);
 
-  luaL_register(L, "audio.byte", audio_ByteMain__);
-  luaL_register(L, "audio.char", audio_CharMain__);
-  luaL_register(L, "audio.short", audio_ShortMain__);
-  luaL_register(L, "audio.int", audio_IntMain__);
-  luaL_register(L, "audio.long", audio_LongMain__);
-  luaL_register(L, "audio.double", audio_DoubleMain__); 
-  luaL_register(L, "audio.float", audio_FloatMain__);
+  lua_newtable(L);
+  lua_pushvalue(L, -1);
+  lua_setglobal(L, "audio");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, audio_DoubleMain__, 0);
+  lua_setfield(L, -2, "double");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, audio_FloatMain__, 0);
+  lua_setfield(L, -2, "float");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, audio_ByteMain__, 0);
+  lua_setfield(L, -2, "byte");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, audio_CharMain__, 0);
+  lua_setfield(L, -2, "char");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, audio_ShortMain__, 0);
+  lua_setfield(L, -2, "short");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, audio_IntMain__, 0);
+  lua_setfield(L, -2, "int");
+
+  lua_newtable(L);
+  luaT_setfuncs(L, audio_LongMain__, 0);
+  lua_setfield(L, -2, "long");
 
   return 1;
 }
