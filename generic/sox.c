@@ -33,15 +33,23 @@
 /* --     May 24th, 2012, 8:38PM - wrote load function - Soumith Chintala */
 /* ---------------------------------------------------------------------- */
 
-void libsox_(read_audio)(sox_format_t *fd, THTensor* tensor, int* sample_rate)
+void libsox_(read_audio)(sox_format_t *fd, THTensor* tensor,
+                         int* sample_rate, size_t nsamples)
 {
   int nchannels = fd->signal.channels;
   long buffer_size = fd->signal.length;
+  if (buffer_size == 0) {
+    if (nsamples != -1) {
+      buffer_size = nsamples;
+    } else {
+      THError("[read_audio] Unknown length");
+    }
+  }
   *sample_rate = (int) fd->signal.rate;
   int32_t *buffer = (int32_t *)malloc(sizeof(int32_t) * buffer_size);
   size_t samples_read = sox_read(fd, buffer, buffer_size);
   if (samples_read == 0)
-    THError("[read_audio_file] Empty file or read failed in sox_read");
+    THError("[read_audio] Empty file or read failed in sox_read");
   // alloc tensor
   THTensor_(resize2d)(tensor, samples_read / nchannels, nchannels );
   real *tensor_data = THTensor_(data)(tensor);
@@ -63,20 +71,23 @@ void libsox_(read_audio_file)(const char *file_name, THTensor* tensor, int* samp
   fd = sox_open_read(file_name, NULL, NULL, NULL);
   if (fd == NULL)
     THError("[read_audio_file] Failure to read file");
-  libsox_(read_audio)(fd, tensor, sample_rate);
+  libsox_(read_audio)(fd, tensor, sample_rate, -1);
   sox_close(fd);
 }
 
-void libsox_(read_audio_memory)(THCharTensor *inp, THTensor* tensor, int* sample_rate)
+void libsox_(read_audio_memory)(THCharTensor *inp, THTensor* tensor,
+                                int* sample_rate, const char* extension)
 {
   // Create sox objects and read into int32_t buffer
   sox_format_t *fd;
   char* buffer = THCharTensor_data(inp);
   size_t buffer_size = THCharTensor_size(inp, 0);
-  fd = sox_open_mem_read(buffer, buffer_size, NULL, NULL, NULL);
+  int64_t length;
+  memcpy(&length, buffer, 8);
+  fd = sox_open_mem_read(buffer + 8, buffer_size, NULL, NULL, extension);
   if (fd == NULL)
     THError("[read_audio_memory] Failure to read input buffer");
-  libsox_(read_audio)(fd, tensor, sample_rate);
+  libsox_(read_audio)(fd, tensor, sample_rate, length);
   sox_close(fd);
 }
 
@@ -124,7 +135,7 @@ void libsox_(write_audio_file)(const char *file_name, THTensor* src,
     THError("[write_audio_file] Failure to open file for writing");
 
   libsox_(write_audio)(fd, src, extension, sample_rate);
-  
+
   // free buffer and sox structures
   sox_close(fd);
 
@@ -141,8 +152,8 @@ void libsox_(write_audio_memory)(THCharTensor* out, THTensor* src,
   long nsamples = src->size[0];
 
   sox_format_t *fd;
-  char *buffer;
-  size_t buffer_size;
+  char *buffer = NULL;
+  size_t buffer_size = -1;
 
   // Create sox objects and write into int32_t buffer
   sox_signalinfo_t sinfo;
@@ -159,11 +170,28 @@ void libsox_(write_audio_memory)(THCharTensor* out, THTensor* src,
 
   libsox_(write_audio)(fd, src, extension, sample_rate);
 
-  THCharStorage* out_storage = THCharStorage_newWithData(buffer, buffer_size);
-  THCharTensor_setStorage1d(out, out_storage, 0, buffer_size, 1);
-  
   // free sox structures
   sox_close(fd);
+
+  // write the number of samples as well. to get around a SOX bug for certain formats.
+  int64_t olength = nsamples * nchannels;
+  size_t  out_size = buffer_size + 8;
+  char *  out_data = (char*) malloc(out_size);
+
+  /* TODO: investigate why if I create a storage and memcpy over, it's segfaulting */
+  // THCharStorage* out_storage = THCharStorage_newWithSize1(out_size);
+  // char* out_data = THCharStorage_data(out_storage);
+
+  // write the actual data after an offset of int64_t
+  memcpy(out_data + 8, buffer, buffer_size);
+  memcpy(out_data, &olength, 8);
+
+  THCharStorage* out_storage = THCharStorage_newWithData(out_data, out_size);
+
+  THCharTensor_setStorage1d(out, out_storage, 0, out_size, 1);
+
+  // free buffers and stuff
+  free(buffer);
 
   return;
 }
@@ -180,9 +208,10 @@ static int libsox_(Main_load)(lua_State *L) {
 
 static int libsox_(Main_decompress)(lua_State *L) {
   THCharTensor *inp = luaT_checkudata(L, 1, "torch.CharTensor");
+  const char *extension = luaL_checkstring(L, 2);
   THTensor *tensor = THTensor_(new)();
   int sample_rate = 0;
-  libsox_(read_audio_memory)(inp, tensor, &sample_rate);
+  libsox_(read_audio_memory)(inp, tensor, &sample_rate, extension);
   luaT_pushudata(L, tensor, torch_Tensor);
   lua_pushnumber(L, (double) sample_rate);
   return 2;

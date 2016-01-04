@@ -1,7 +1,7 @@
 ----------------------------------------------------------------------
 --
 -- Copyright (c) 2012 Soumith Chintala
--- 
+--
 -- Permission is hereby granted, free of charge, to any person obtaining
 -- a copy of this software and associated documentation files (the
 -- "Software"), to deal in the Software without restriction, including
@@ -9,10 +9,10 @@
 -- distribute, sublicense, and/or sell copies of the Software, and to
 -- permit persons to whom the Software is furnished to do so, subject to
 -- the following conditions:
--- 
+--
 -- The above copyright notice and this permission notice shall be
 -- included in all copies or substantial portions of the Software.
--- 
+--
 -- THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
 -- EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
 -- MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -20,12 +20,12 @@
 -- LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 -- OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 -- WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
--- 
+--
 ----------------------------------------------------------------------
 -- description:
 --     audio - an audio toolBox, for Torch
 --
--- history: 
+-- history:
 --     May 24th, 2012, 7:28PM - wrote sox wrappers - Soumith Chintala
 ----------------------------------------------------------------------
 
@@ -77,37 +77,48 @@ rawset(audio, 'save', save)
 --------------------------------------------------------------------------
 -- compress
 -- save to multiple formats
-local function compress(src, sample_rate, extension)
+function audio.compress(src, sample_rate, extension)
    if not src then
       error('src tensor missing')
    end
    assert(sample_rate and type(sample_rate) == 'number',
 	  'provide a sample rate (a number) such as 22050')
    if not xlua.require 'libsox' then
-      dok.error('libsox package not found, please install libsox','audio.save')
+      dok.error('libsox package not found, please install libsox','audio.compress')
    end
    local out = torch.CharTensor()
    src.libsox.compress(out, src, extension, sample_rate)
    return out
 end
-rawset(audio, 'compress', compressMP3)
 
 -- decompress
-local function decompress(src)
-   if not xlua.require 'libsox' then
-      dok.error('libsox package not found, please install libsox','audio.load')
+function audio.decompress(src, extension)
+   if not src then
+      error('src tensor missing')
    end
-   local a, sample_rate = torch.Tensor().libsox.decompress(src)
+   if not extension then
+      error('extension string missing')
+   end
+   if not xlua.require 'libsox' then
+      dok.error('libsox package not found, please install libsox','audio.decompress')
+   end
+   local a, sample_rate = torch.Tensor().libsox.decompress(src, extension)
    return a, sample_rate
 end
-rawset(audio, 'load', load)
 
 -- compressMP3
 function audio.compressMP3(src, sample_rate)
-    audio.compress(src, sample_rate, 'mp3')
+   return audio.compress(src, sample_rate, 'mp3')
 end
 function audio.compressOGG(src, sample_rate)
-    audio.compress(src, sample_rate, 'ogg')
+   return audio.compress(src, sample_rate, 'ogg')
+end
+
+function audio.decompressMP3(src)
+   return audio.decompress(src, 'mp3')
+end
+function audio.decompressOGG(src)
+   return audio.decompress(src, 'ogg')
 end
 ----------------------------------------------------------------------
 -- spectrogram
@@ -219,7 +230,7 @@ rawset(audio, 'cqt', cqt)
 -- loads voice.mp3 that is included with the repo
 local function samplevoice()
    local fname = 'voice.mp3'
-   local voice = audio.load(sys.concat(sys.fpath(), fname))   
+   local voice = audio.load(sys.concat(sys.fpath(), fname))
    return voice
 end
 rawset(audio, 'samplevoice', samplevoice)
