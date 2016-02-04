@@ -234,3 +234,5 @@ local function samplevoice()
    return voice
 end
 rawset(audio, 'samplevoice', samplevoice)
+
+return audio
