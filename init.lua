@@ -219,7 +219,7 @@ local function cqt(...)
 		      {type='number', help='sampling rate of the input', req=true}))
       dok.error('incorrect arguments', 'audio.cqt')
    end
-   -- calculate stft
+   -- calculate cqt
    output = torch.Tensor().audio.cqt(input, fmin, fmax, bins_per_octave, sample_rate)
    return output
 end
